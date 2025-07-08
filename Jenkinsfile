@@ -61,12 +61,14 @@ pipeline {
 
         stage('Deploy to Cloud Run via Terraform') {
             steps {
-                dir('terraform') {
-                    sh '''
-                        terraform --version
-                        terraform init
-                        terraform apply -auto-approve
-                    '''
+                withCredentials([file(credentialsId: 'gcp-sa-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    dir('terraform') {
+                        sh '''
+                            terraform --version
+                            terraform init
+                            terraform apply -auto-approve
+                        '''
+                    }
                 }
             }
         }
