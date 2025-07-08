@@ -17,14 +17,28 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                sh 'docker run --rm -v "$PWD":/app -w /app maven:3.9.6-eclipse-temurin-17-alpine mvn test'
+                dir('.') {
+                    sh '''
+                        docker run --rm \
+                          -v $WORKSPACE:/app \
+                          -w /app \
+                          maven:3.9.6-eclipse-temurin-17-alpine mvn test
+                    '''
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'docker run --rm -v "$PWD":/app -w /app maven:3.9.6-eclipse-temurin-17-alpine mvn sonar:sonar'
+                    dir('.') {
+                        sh '''
+                            docker run --rm \
+                              -v $WORKSPACE:/app \
+                              -w /app \
+                              maven:3.9.6-eclipse-temurin-17-alpine mvn sonar:sonar
+                        '''
+                    }
                 }
             }
         }
@@ -37,11 +51,8 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${DOCKER_IMAGE}
-                    '''
+                withDockerRegistry([credentialsId: "${DOCKER_HUB_CREDENTIALS}", url: '']) {
+                    sh "docker push ${DOCKER_IMAGE}"
                 }
             }
         }
