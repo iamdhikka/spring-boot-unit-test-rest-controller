@@ -50,8 +50,11 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry([credentialsId: "${DOCKER_HUB_CREDENTIALS}", url: '']) {
-                    sh "docker push ${DOCKER_IMAGE}"
+                script {
+                    docker.withRegistry('', "${DOCKER_HUB_CREDENTIALS}") {
+                        def image = docker.image("${DOCKER_IMAGE}")
+                        image.push()
+                    }
                 }
             }
         }
