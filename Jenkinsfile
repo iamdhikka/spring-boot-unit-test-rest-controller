@@ -9,36 +9,29 @@ pipeline {
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
                 git branch: 'master', url: 'https://github.com/iamdhikka/spring-boot-unit-test-rest-controller.git'
             }
         }
 
+        stage('Debug Workspace') {
+            steps {
+                sh 'ls -la'
+            }
+        }
+
         stage('Run Unit Tests') {
             steps {
-                dir('.') {
-                    sh '''
-                        docker run --rm \
-                          -v $WORKSPACE:/app \
-                          -w /app \
-                          maven:3.9.6-eclipse-temurin-17-alpine mvn test
-                    '''
-                }
+                sh './mvnw test'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    dir('.') {
-                        sh '''
-                            docker run --rm \
-                              -v $WORKSPACE:/app \
-                              -w /app \
-                              maven:3.9.6-eclipse-temurin-17-alpine mvn sonar:sonar
-                        '''
-                    }
+                    sh './mvnw sonar:sonar'
                 }
             }
         }
@@ -61,6 +54,7 @@ pipeline {
             steps {
                 dir('terraform') {
                     sh '''
+                        terraform --version
                         terraform init
                         terraform apply -auto-approve
                     '''
