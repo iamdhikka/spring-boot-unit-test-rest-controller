@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.9.6-eclipse-temurin-17-alpine'
-            args '-v /root/.m2:/root/.m2'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = "iamdhikka/spring-boot-unit-test-rest-controller:${BUILD_NUMBER}"
@@ -22,14 +17,22 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                sh 'mvn test'
+                script {
+                    docker.image('maven:3.9.6-eclipse-temurin-17-alpine').inside {
+                        sh 'mvn test'
+                    }
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar'
+                script {
+                    docker.image('maven:3.9.6-eclipse-temurin-17-alpine').inside {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'mvn sonar:sonar'
+                        }
+                    }
                 }
             }
         }
