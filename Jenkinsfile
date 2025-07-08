@@ -24,14 +24,20 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                sh './mvnw test'
+                sh '''
+                    chmod +x mvnw
+                    ./mvnw test
+                '''
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh './mvnw sonar:sonar'
+                    sh '''
+                        chmod +x mvnw
+                        ./mvnw sonar:sonar
+                    '''
                 }
             }
         }
