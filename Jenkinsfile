@@ -54,6 +54,7 @@ pipeline {
                     docker.withRegistry('', "${DOCKER_HUB_CREDENTIALS}") {
                         def image = docker.image("${DOCKER_IMAGE}")
                         image.push()
+                        image.push('latest')
                     }
                 }
             }
